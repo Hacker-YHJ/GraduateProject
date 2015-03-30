@@ -1,0 +1,7 @@
+<resources>
+
+    <color name="black_overlay">#66000000</color>
+    <color name="toggleBtnOn">#AA4FDEFD</color>
+    <color name="toggleBtnOff">#004FDEFD</color>
+
+</resources>

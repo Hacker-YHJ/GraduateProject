@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Space
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:id="@+id/inputContainer">
+
+        <TableLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:columnCount="2"
+            android:rowCount="6"
+            android:clickable="false"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/right_border">
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp">
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="b/p"
+                    android:textOn="b/p"
+                    android:textOff="b/p"
+                    android:id="@+id/btn_bp"
+                    android:layout_column="0"
+                    android:layout_row="0"
+                    android:layout_rowSpan="1"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:layout_marginBottom="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="m/f"
+                    android:textOn="m/f"
+                    android:textOff="m/f"
+                    android:id="@+id/btn_mf"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:layout_marginBottom="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal">
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="d/t"
+                    android:textOn="d/t"
+                    android:textOff="d/t"
+                    android:id="@+id/btn_dt"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="n/l"
+                    android:textOn="n/l"
+                    android:textOff="n/l"
+                    android:id="@+id/btn_nl"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal">
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="h/y"
+                    android:textOn="h/y"
+                    android:textOff="h/y"
+                    android:id="@+id/btn_hy"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="g/k"
+                    android:textOn="g/k"
+                    android:textOff="g/k"
+                    android:id="@+id/btn_gk"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal">
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="j/q"
+                    android:textOn="j/q"
+                    android:textOff="j/q"
+                    android:id="@+id/btn_jq"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="x/w"
+                    android:textOn="x/w"
+                    android:textOff="x/w"
+                    android:id="@+id/btn_xw"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal">
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="c/ch"
+                    android:textOn="c/ch"
+                    android:textOff="c/ch"
+                    android:id="@+id/btn_cch"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="z/zh"
+                    android:textOn="z/zh"
+                    android:textOff="z/zh"
+                    android:id="@+id/btn_zzh"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+            </TableRow>
+
+            <TableRow
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center_horizontal">
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="r"
+                    android:textOn="r"
+                    android:textOff="r"
+                    android:id="@+id/btn_r"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+
+                <ToggleButton
+                    android:layout_width="140dp"
+                    android:layout_height="70dp"
+                    android:text="s/sh"
+                    android:textOn="s/sh"
+                    android:textOff="s/sh"
+                    android:id="@+id/btn_ssh"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="6dp"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp"
+                    android:background="@drawable/flat_toggle_button_bg" />
+            </TableRow>
+
+        </TableLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight="2"
+            android:background="#20262A"></LinearLayout>
+
+        <com.yanghj.newinputtest.MultiTouchView
+            android:orientation="vertical"
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:background="@drawable/left_border">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="u"
+                    android:gravity="center"
+                    android:id="@+id/char_u"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:textSize="28dp"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="i"
+                    android:gravity="center"
+                    android:id="@+id/char_i"
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:textSize="28dp"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="e"
+                    android:gravity="center"
+                    android:id="@+id/char_e"
+                    android:layout_weight="1"
+                    android:textSize="28dp"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="a"
+                    android:gravity="center"
+                    android:id="@+id/char_a"
+                    android:layout_weight="1"
+                    android:textSize="28dp"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:text="o"
+                    android:gravity="center"
+                    android:id="@+id/char_o"
+                    android:layout_weight="1"
+                    android:textSize="28dp"
+                    android:textColor="#ffffff"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="n"
+                android:id="@+id/char_n"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_gravity="center"
+                android:textSize="28dp"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="g"
+                android:id="@+id/char_g"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:layout_gravity="center"
+                android:textSize="28dp"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+        </com.yanghj.newinputtest.MultiTouchView>
+
+    </LinearLayout>
+</LinearLayout>
