@@ -247,12 +247,11 @@
 
         </TableLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
+        <com.yanghj.newinputtest.CharacterSelectView
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="2"
-            android:background="#20262A"></LinearLayout>
+            android:background="#20262A"></com.yanghj.newinputtest.CharacterSelectView>
 
         <com.yanghj.newinputtest.MultiTouchView
             android:orientation="vertical"

@@ -2,6 +2,7 @@ package com.yanghj.newinputtest;
 
 /**
  * Created by yanghj on 3/30/15.
+ * Util Pools class
  */
 
 public final class Pools {

@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.SparseArray;
 import android.view.MotionEvent;
@@ -12,6 +13,9 @@ import android.widget.LinearLayout;
 
 /**
  * Created by yanghj on 3/27/15.
+ * A custom LinearLayout that handles multitouch event
+ * Draw a touch indicator showing trajectory
+ * And send the trajectory to {@link com.yanghj.newinputtest.TrajectoryCalculator}
  */
 public class MultiTouchView extends LinearLayout {
     public MultiTouchView(Context context) {
@@ -31,16 +35,13 @@ public class MultiTouchView extends LinearLayout {
     // Hold data for active touch pointer IDs
     private SparseArray<TouchHistory> mTouches;
 
-    // Is there an active touch?
-    private boolean mHasTouch = false;
-
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         return true;
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(@NonNull MotionEvent event) {
 
         final int action = event.getAction();
 
@@ -71,8 +72,6 @@ public class MultiTouchView extends LinearLayout {
                  * accounting for other pointers going up or down.
                  */
                 mTouches.put(id, data);
-
-                mHasTouch = true;
 
                 break;
             }
@@ -121,8 +120,6 @@ public class MultiTouchView extends LinearLayout {
                 TouchHistory data = mTouches.get(id);
                 mTouches.remove(id);
                 data.recycle();
-
-                mHasTouch = false;
 
                 break;
             }
@@ -194,14 +191,7 @@ public class MultiTouchView extends LinearLayout {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // Canvas background color depends on whether there is an active touch
-        if (mHasTouch) {
-            canvas.drawColor(BACKGROUND_ACTIVE);
-        } else {
-            // draw inactive border
-            canvas.drawRect(mBorderWidth, mBorderWidth, getWidth() - mBorderWidth, getHeight()
-                    - mBorderWidth, mBorderPaint);
-        }
+        canvas.drawColor(BACKGROUND_ACTIVE);
 
         // loop through all active touches and draw them
         for (int i = 0; i < mTouches.size(); i++) {
@@ -225,13 +215,12 @@ public class MultiTouchView extends LinearLayout {
     private static final float CIRCLE_HISTORICAL_RADIUS_DP = 7f;
 
     // calculated radiuses in px
-    private float mCircleRadius;
     private float mCircleHistoricalRadius;
 
     private Paint mCirclePaint = new Paint();
     private Paint mTextPaint = new Paint();
 
-    private static final int BACKGROUND_ACTIVE = Color.WHITE;
+    private static final int BACKGROUND_ACTIVE = Color.TRANSPARENT;
 
     // inactive border
     private static final float INACTIVE_BORDER_DP = 15f;
@@ -252,7 +241,6 @@ public class MultiTouchView extends LinearLayout {
 
         // Calculate radiuses in px from dp based on screen density
         float density = getResources().getDisplayMetrics().density;
-        mCircleRadius = CIRCLE_RADIUS_DP * density;
         mCircleHistoricalRadius = CIRCLE_HISTORICAL_RADIUS_DP * density;
 
         // Setup text paint for circle label
@@ -288,10 +276,10 @@ public class MultiTouchView extends LinearLayout {
          * 1.0 max to ensure proper drawing. (Reported pressure values can
          * exceed 1.0, depending on the calibration of the touch screen).
          */
-        float pressure = Math.min(data.pressure, 1f);
-        float radius = pressure * mCircleRadius;
+//        float pressure = Math.min(data.pressure, 1f);
+//        float radius = pressure * mCircleRadius;
 
-        canvas.drawCircle(data.x, (data.y) - (radius / 2f), radius,
+        canvas.drawCircle(data.x, data.y, mCircleHistoricalRadius,
                 mCirclePaint);
 
         // draw all historical points with a lower alpha value
@@ -302,8 +290,8 @@ public class MultiTouchView extends LinearLayout {
         }
 
         // draw its label next to the main circle
-        canvas.drawText(data.label, data.x + radius, data.y
-                - radius, mTextPaint);
+//        canvas.drawText(data.label, data.x + radius, data.y
+//                - radius, mTextPaint);
     }
 
     static final class TouchHistory {
@@ -320,12 +308,12 @@ public class MultiTouchView extends LinearLayout {
         public int historyIndex = 0;
         public int historyCount = 0;
 
-        // arrray of pointer position history
+        // array of pointer position history
         public PointF[] history = new PointF[HISTORY_COUNT];
 
         private static final int MAX_POOL_SIZE = 10;
         private static final Pools.SimplePool<TouchHistory> sPool =
-                new Pools.SimplePool<TouchHistory>(MAX_POOL_SIZE);
+                new Pools.SimplePool<>(MAX_POOL_SIZE);
 
         public static TouchHistory obtain(float x, float y, float pressure) {
             TouchHistory data = sPool.acquire();
