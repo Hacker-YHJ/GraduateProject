@@ -7,17 +7,26 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 /**
  * Created by yanghj on 3/27/15.
  * A custom LinearLayout that handles multitouch event
  * Draw a touch indicator showing trajectory
- * And send the trajectory to {@link com.yanghj.newinputtest.TrajectoryCalculator}
+ * And send the trajectory to {@link com.yanghj.newinputtest.MultiTouchView.TrajectoryCalculator}
  */
 public class MultiTouchView extends LinearLayout {
+
+    // Hold data for active touch pointer IDs
+    private SparseArray<TouchHistory> mTouches;
+
+    private TrajectoryCalculator traCalc;
+
     public MultiTouchView(Context context) {
         super(context);
     }
@@ -32,8 +41,11 @@ public class MultiTouchView extends LinearLayout {
         super(context, attrs, defStyleAttr);
     }
 
-    // Hold data for active touch pointer IDs
-    private SparseArray<TouchHistory> mTouches;
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        traCalc = new TrajectoryCalculator();
+    }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -44,6 +56,7 @@ public class MultiTouchView extends LinearLayout {
     public boolean onTouchEvent(@NonNull MotionEvent event) {
 
         final int action = event.getAction();
+        final int count = event.getPointerCount();
 
         /*
          * Switch on the action. The action is extracted from the event by
@@ -119,6 +132,7 @@ public class MultiTouchView extends LinearLayout {
                 int id = event.getPointerId(0);
                 TouchHistory data = mTouches.get(id);
                 mTouches.remove(id);
+                traCalc.calc(data);
                 data.recycle();
 
                 break;
@@ -163,7 +177,7 @@ public class MultiTouchView extends LinearLayout {
                  * This identifier is used to keep track of a pointer across
                  * events.
                  */
-                for (int index = 0; index < event.getPointerCount(); index++) {
+                for (int index = 0; index < count; index++) {
                     // get pointer id for data stored at this index
                     int id = event.getPointerId(index);
 
@@ -281,6 +295,9 @@ public class MultiTouchView extends LinearLayout {
 
         canvas.drawCircle(data.x, data.y, mCircleHistoricalRadius,
                 mCirclePaint);
+        if (traCalc.test(data.x, data.y)) {
+            Log.d("DOT", String.format("x = %f, y = %f", data.x, data.y));
+        }
 
         // draw all historical points with a lower alpha value
         mCirclePaint.setAlpha(125);
@@ -294,6 +311,9 @@ public class MultiTouchView extends LinearLayout {
 //                - radius, mTextPaint);
     }
 
+    /**
+     * Touch History, aka Trajectory
+     */
     static final class TouchHistory {
 
         // number of historical points to store
@@ -364,5 +384,323 @@ public class MultiTouchView extends LinearLayout {
             }
         }
 
+    }
+
+    final class TrajectoryCalculator {
+        private TextView btn_u;
+        private TextView btn_i;
+        private TextView btn_e;
+        private TextView btn_a;
+        private TextView btn_o;
+        private TextView btn_n;
+        private TextView btn_g;
+
+        private YunRect rect_u;
+        private YunRect rect_i;
+        private YunRect rect_e;
+        private YunRect rect_a;
+        private YunRect rect_o;
+        private YunRect rect_n;
+        private YunRect rect_g;
+
+        private YunRect[][] trajectories;
+        public TrajectoryCalculator() {
+            getTextViews();
+        }
+
+        /**
+         * Calculate the touch history and translate the trajectory into correct 韵母
+         * @param data history points
+         * @return 韵母 or null
+         */
+        public String calc(TouchHistory data) {
+            if (null == trajectories) buildTrajectory();
+
+            YunRect easyDetect = isInSameRect(data.history[0], data.history[data.historyCount-1]);
+            if (null != easyDetect) {
+                return easyDetect.yun;
+            }
+            else {
+                YunRect sR = locate(data.history[0]);
+                YunRect eR = locate(data.history[data.historyCount-1]);
+            }
+            return null;
+        }
+
+        public boolean test(float x, float y) {
+            return rect_u.contains((int)x, (int)y);
+        }
+
+        /**
+         * If two point end up within one same TestView, return the YunRect
+         * else return null
+         * @param x point 1
+         * @param y point 2
+         * @return YunRect or null
+         */
+        private YunRect isInSameRect(PointF x, PointF y) {
+            if (x.equals(y)) return locate(x);
+
+            YunRect x_on = locate(x);
+            YunRect y_on = locate(y);
+
+            if (x_on.equals(y_on)) {
+                return x_on;
+            }
+            else return null;
+        }
+
+        /**
+         * find out which TextView a point is on
+         * @param x the point
+         * @return which
+         */
+        private YunRect locate(PointF x) {
+            if (rect_a.contains(x)) {
+                return rect_a;
+            }
+            else if (rect_e.contains(x)) {
+                return rect_e;
+            }
+            else if (rect_i.contains(x)) {
+                return rect_i;
+            }
+            else if (rect_o.contains(x)) {
+                return rect_o;
+            }
+            else if (rect_u.contains(x)) {
+                return rect_u;
+            }
+            else if (rect_n.contains(x)) {
+                return rect_n;
+            }
+            else if (rect_g.contains(x)) {
+                return rect_g;
+            }
+            else {
+                throw new RuntimeException("not in any rect");
+            }
+        }
+
+        /**
+         * Find every TextView and their bounding rectangle
+         * when their position is determined
+         */
+        private void getTextViews() {
+            btn_u = (TextView)findViewById(R.id.char_u);
+            btn_i = (TextView)findViewById(R.id.char_i);
+            btn_e = (TextView)findViewById(R.id.char_e);
+            btn_a = (TextView)findViewById(R.id.char_a);
+            btn_o = (TextView)findViewById(R.id.char_o);
+            btn_n = (TextView)findViewById(R.id.char_n);
+            btn_g = (TextView)findViewById(R.id.char_g);
+
+            btn_u.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    rect_u = new YunRect(left, top, right, bottom);
+                    rect_u.setYun(InputManager.Y_U);
+                }
+            });
+
+            btn_i.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    rect_i = new YunRect(left, top, right, bottom);
+                    rect_i.setYun(InputManager.Y_I);
+                }
+            });
+
+            btn_e.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    rect_e = new YunRect(left, top, right, bottom);
+                    rect_e.setYun(InputManager.Y_E);
+                }
+            });
+
+            btn_a.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    rect_a = new YunRect(left, top, right, bottom);
+                    rect_a.setYun(InputManager.Y_A);
+                }
+            });
+
+            btn_o.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    rect_o = new YunRect(left, top, right, bottom);
+                    rect_o.setYun(InputManager.Y_O);
+                }
+            });
+
+            btn_n.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    rect_n = new YunRect(left, top, right, bottom);
+                    rect_u.setYun(null);
+                }
+            });
+
+            btn_g.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+                @Override
+                public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    rect_g = new YunRect(left, top, right, bottom);
+                    rect_g.setYun(null);
+                }
+            });
+        }
+
+        /**
+         * write all trajectories into an two-dimensional array
+         */
+        private void buildTrajectory() {
+            trajectories = new YunRect[26][];
+
+            // ai
+            trajectories[0] = new YunRect[2];
+            trajectories[0][0] = rect_a;
+            trajectories[0][1] = rect_i;
+
+            // ao
+            trajectories[1] = new YunRect[2];
+            trajectories[1][0] = rect_a;
+            trajectories[1][1] = rect_o;
+
+            // an
+            trajectories[2] = new YunRect[2];
+            trajectories[2][0] = rect_a;
+            trajectories[2][1] = rect_n;
+
+            // ang
+            trajectories[3] = new YunRect[3];
+            trajectories[3][0] = rect_a;
+            trajectories[3][1] = rect_n;
+            trajectories[3][2] = rect_g;
+
+            // ei
+            trajectories[4] = new YunRect[2];
+            trajectories[4][0] = rect_e;
+            trajectories[4][1] = rect_i;
+
+            // en
+            trajectories[5] = new YunRect[2];
+            trajectories[5][0] = rect_e;
+            trajectories[5][1] = rect_n;
+
+            // eng
+            trajectories[6] = new YunRect[3];
+            trajectories[6][0] = rect_e;
+            trajectories[6][1] = rect_n;
+            trajectories[6][2] = rect_g;
+
+            // in
+            trajectories[7] = new YunRect[2];
+            trajectories[7][0] = rect_i;
+            trajectories[7][1] = rect_n;
+
+            // ing
+            trajectories[8] = new YunRect[3];
+            trajectories[8][0] = rect_i;
+            trajectories[8][1] = rect_n;
+            trajectories[8][2] = rect_g;
+
+            // ia
+            trajectories[9] = new YunRect[2];
+            trajectories[9][0] = rect_i;
+            trajectories[9][1] = rect_a;
+
+            // ian
+            trajectories[10] = new YunRect[3];
+            trajectories[10][0] = rect_i;
+            trajectories[10][1] = rect_a;
+            trajectories[10][2] = rect_n;
+
+            // iang
+            trajectories[11] = new YunRect[4];
+            trajectories[11][0] = rect_i;
+            trajectories[11][1] = rect_a;
+            trajectories[11][2] = rect_n;
+            trajectories[11][3] = rect_g;
+
+            // iao
+            trajectories[12] = new YunRect[3];
+            trajectories[12][0] = rect_i;
+            trajectories[12][1] = rect_a;
+            trajectories[12][2] = rect_o;
+
+            // ie
+            trajectories[13] = new YunRect[2];
+            trajectories[13][0] = rect_i;
+            trajectories[13][1] = rect_e;
+
+            // iu
+            trajectories[14] = new YunRect[2];
+            trajectories[14][0] = rect_i;
+            trajectories[14][1] = rect_u;
+
+            // iong
+            trajectories[15] = new YunRect[4];
+            trajectories[15][0] = rect_i;
+            trajectories[15][1] = rect_o;
+            trajectories[15][2] = rect_n;
+            trajectories[15][3] = rect_g;
+
+            // ou
+            trajectories[16] = new YunRect[2];
+            trajectories[16][0] = rect_o;
+            trajectories[16][1] = rect_u;
+
+            // ong
+            trajectories[17] = new YunRect[3];
+            trajectories[17][0] = rect_o;
+            trajectories[17][1] = rect_n;
+            trajectories[17][2] = rect_g;
+
+            // ua
+            trajectories[18] = new YunRect[2];
+            trajectories[18][0] = rect_u;
+            trajectories[18][1] = rect_a;
+
+            // uan
+            trajectories[19] = new YunRect[3];
+            trajectories[19][0] = rect_u;
+            trajectories[19][1] = rect_a;
+            trajectories[19][2] = rect_n;
+
+            // uang
+            trajectories[20] = new YunRect[4];
+            trajectories[20][0] = rect_u;
+            trajectories[20][1] = rect_a;
+            trajectories[20][2] = rect_n;
+            trajectories[20][3] = rect_g;
+
+            // uai
+            trajectories[21] = new YunRect[3];
+            trajectories[21][0] = rect_u;
+            trajectories[21][1] = rect_a;
+            trajectories[21][2] = rect_i;
+
+            // ue
+            trajectories[22] = new YunRect[2];
+            trajectories[22][0] = rect_u;
+            trajectories[22][1] = rect_e;
+
+            // ui
+            trajectories[23] = new YunRect[2];
+            trajectories[23][0] = rect_u;
+            trajectories[23][1] = rect_i;
+
+            // uo
+            trajectories[24] = new YunRect[2];
+            trajectories[24][0] = rect_u;
+            trajectories[24][1] = rect_o;
+
+            // un
+            trajectories[25] = new YunRect[2];
+            trajectories[25][0] = rect_u;
+            trajectories[25][1] = rect_n;
+        }
     }
 }
