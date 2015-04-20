@@ -1,6 +1,16 @@
 package com.yanghj.newinputtest;
 
+import android.app.Activity;
+import android.support.annotation.Nullable;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
 
 /**
  * Created by yanghj on 3/31/15.
@@ -8,11 +18,13 @@ import java.io.InputStream;
 public class InputManager {
     private static InputManager instance;
 
-    public static boolean init() {
-        return true;
-    }
-
-    public static InputManager getInstance() {
+    public static InputManager getInstance(@Nullable Activity aty) {
+        if (null == instance) try {
+            instance = new InputManager(aty);
+        } catch (IOException e) {
+            Log.d("InputManager", "init fail");
+            e.printStackTrace();
+        }
         return instance;
     }
 
@@ -22,6 +34,8 @@ public class InputManager {
     public static final String Y_I = "i";
     public static final String Y_O = "o";
     public static final String Y_U = "u";
+    public static final String Y_N = "n";
+    public static final String Y_G = "g";
 
     public static final String Y_AI = "ai";
     public static final String Y_AO = "ao";
@@ -81,27 +95,98 @@ public class InputManager {
     public static final String S_C = "c";
     public static final String S_S = "s";
 
-    private String y;
-    private String s;
-    private String candidate;
-    private String[] result;
+    private CharacterList wordList;
+    private MainActivity aty;
+    private TextView indicator;
+    private String pinyin_s1;
+    private String pinyin_s2;
+    private String pinyin_y;
 
-    public InputManager(InputStream in) {
-        this.result = new String[20];
-
+    private InputManager(Activity aty) throws IOException {
+        initWordList(aty);
+        this.aty = (MainActivity)aty;
+        indicator = (TextView)aty.findViewById(R.id.pinyinIndicator);
     }
 
-    public void setS(String s) {
-        this.s = s;
-        if (null != this.y) {
-            candidate = this.s + this.y;
+    public void setPinyinS(String s1, @Nullable String s2) {
+        this.pinyin_s1 = s1;
+        this.pinyin_s2 = s2;
+        aty.refreshSelection();
+    }
+
+    public void setPinyinY(String y) {
+        this.pinyin_y = y;
+        aty.refreshSelection();
+    }
+
+    private void initWordList(Activity aty) throws IOException {
+        wordList = new CharacterList();
+        InputStream im = aty.getResources().openRawResource(R.raw.single_char);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(im));
+        String line = reader.readLine();
+        while (null != line) {
+            wordList.storeLine(line);
+            line = reader.readLine();
+        }
+        wordList.sortAll();
+    }
+
+    public void refreshIndicator() {
+        if (null == pinyin_y || null == pinyin_s1 && null == pinyin_s2) {
+            indicator.setText("");
+        }
+        else if (null == pinyin_s2) {
+            indicator.setText(pinyin_s1 + pinyin_y);
+        }
+        else {
+            indicator.setText(pinyin_s1 + '/' + pinyin_s2 + ' ' + pinyin_y);
         }
     }
 
-    public void setY(String y) {
-        this.y = y;
-        if (null != this.s) {
-            candidate = this.s + this.y;
+    public ArrayAdapter<String> getWords() {
+        if (null == pinyin_y || null == pinyin_s1 && null == pinyin_s2) {
+            return new ArrayAdapter<>(aty,
+                    R.layout.char_select_view_item, new String[] {""});
+        }
+        else {
+            int size = 0, index = 0;
+
+            // search characters for first Sheng + Yun
+            String key1 = pinyin_s1 + pinyin_y;
+            List<CharacterPair> result1 = wordList.get(key1);
+
+            if (null != result1) {
+                size += result1.size();
+            }
+
+            // search characters for second Sheng + Yun
+            String key2;
+            List<CharacterPair> result2 = null;
+            if (null != pinyin_s2) {
+                key2 = pinyin_s2 + pinyin_y;
+                result2 = wordList.get(key2);
+
+                if (null != result2) {
+                    size += result2.size();
+                }
+            }
+
+            // arrayAdapter constructing
+            String[] characterToShow = new String[size+1];
+            if (null != result1) {
+                for (CharacterPair entry : result1) {
+                    characterToShow[index++] = entry.first;
+                }
+            }
+            characterToShow[index++] = " ";
+            if (null != result2) {
+                for (CharacterPair entry : result2) {
+                    characterToShow[index++] = entry.first;
+                }
+            }
+
+            return new ArrayAdapter<>(aty,
+                    R.layout.char_select_view_item, characterToShow);
         }
     }
 }

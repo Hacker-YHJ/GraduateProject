@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,7 +20,6 @@ import android.widget.TextView;
  * And send the trajectory to {@link com.yanghj.newinputtest.MultiTouchView.TrajectoryCalculator}
  */
 public class MultiTouchView extends LinearLayout {
-
     // Hold data for active touch pointer IDs
     private SparseArray<TouchHistory> mTouches;
 
@@ -132,7 +130,10 @@ public class MultiTouchView extends LinearLayout {
                 int id = event.getPointerId(0);
                 TouchHistory data = mTouches.get(id);
                 mTouches.remove(id);
-                traCalc.calc(data);
+                String result = traCalc.calc(data);
+                if (null != result) {
+                    InputManager.getInstance(null).setPinyinY(result);
+                }
                 data.recycle();
 
                 break;
@@ -223,12 +224,10 @@ public class MultiTouchView extends LinearLayout {
      * Below are only helper methods and variables required for drawing.
      */
 
-    // radius of active touch circle in dp
-    private static final float CIRCLE_RADIUS_DP = 75f;
     // radius of historical circle in dp
     private static final float CIRCLE_HISTORICAL_RADIUS_DP = 7f;
 
-    // calculated radiuses in px
+    // calculated radius in px
     private float mCircleHistoricalRadius;
 
     private Paint mCirclePaint = new Paint();
@@ -295,9 +294,6 @@ public class MultiTouchView extends LinearLayout {
 
         canvas.drawCircle(data.x, data.y, mCircleHistoricalRadius,
                 mCirclePaint);
-        if (traCalc.test(data.x, data.y)) {
-            Log.d("DOT", String.format("x = %f, y = %f", data.x, data.y));
-        }
 
         // draw all historical points with a lower alpha value
         mCirclePaint.setAlpha(125);
@@ -413,22 +409,67 @@ public class MultiTouchView extends LinearLayout {
          * @param data history points
          * @return 韵母 or null
          */
-        public String calc(TouchHistory data) {
+        private String calc(TouchHistory data) {
             if (null == trajectories) buildTrajectory();
+
+            // if trajectory starts and ends within same rect
+            // treat this as an simple touch
+            if (data.historyCount == 0) return locate(data.history[0]).yun;
 
             YunRect easyDetect = isInSameRect(data.history[0], data.history[data.historyCount-1]);
             if (null != easyDetect) {
                 return easyDetect.yun;
             }
+
+            // else pick a standard trajectory that has minimal distance from
+            // each point of user trajectory
             else {
+                // sR: where user trajectory starts
+                // eR: where user trajectory ends
                 YunRect sR = locate(data.history[0]);
                 YunRect eR = locate(data.history[data.historyCount-1]);
+
+                // result: standard trajectory that is closest to user trajectory
+                // minSumDist: distance from result to user trajectory
+                YunRect[] result = null;
+                double minSumDist = Double.MAX_VALUE;
+                for (YunRect[] trajectory : trajectories) {
+                    if (sR != trajectory[0] ||
+                            eR != trajectory[trajectory.length - 1]) {
+                        continue;
+                    }
+
+                    // sumDist is the minimal sum distance from user trajectory to
+                    // standard trajectory in this iteration
+                    double sumDist = 0;
+                    for (PointF trajPoint : data.history) {
+                        double pointDist = Double.MAX_VALUE;
+                        for (int i = 1; i < trajectory.length; ++i) {
+                            PointF s = new PointF(trajectory[i - 1].centerX(), trajectory[i - 1].centerY());
+                            PointF e = new PointF(trajectory[i].centerX(), trajectory[i].centerY());
+
+                            // for each point in user trajectory, choose a min distance from standard trajectories.
+                            double tmpDist = disFromLine(s, e, trajPoint);
+                            pointDist = pointDist < tmpDist ? pointDist : tmpDist;
+                        }
+                        sumDist += pointDist;
+                    }
+
+                    if (sumDist < minSumDist) {
+                        minSumDist = sumDist;
+                        result = trajectory;
+                    }
+                }
+
+                if (null != result) {
+                    String sYun = "";
+                    for (YunRect r : result) {
+                        sYun += r.yun;
+                    }
+                    return sYun;
+                }
             }
             return null;
-        }
-
-        public boolean test(float x, float y) {
-            return rect_u.contains((int)x, (int)y);
         }
 
         /**
@@ -439,7 +480,9 @@ public class MultiTouchView extends LinearLayout {
          * @return YunRect or null
          */
         private YunRect isInSameRect(PointF x, PointF y) {
-            if (x.equals(y)) return locate(x);
+            if (x.equals(y)) {
+                return locate(x);
+            }
 
             YunRect x_on = locate(x);
             YunRect y_on = locate(y);
@@ -447,7 +490,7 @@ public class MultiTouchView extends LinearLayout {
             if (x_on.equals(y_on)) {
                 return x_on;
             }
-            else return null;
+            return null;
         }
 
         /**
@@ -478,7 +521,7 @@ public class MultiTouchView extends LinearLayout {
                 return rect_g;
             }
             else {
-                throw new RuntimeException("not in any rect");
+                throw new RuntimeException(String.format("not in any rect x: %f, y: %f", x.x, x.y));
             }
         }
 
@@ -498,6 +541,7 @@ public class MultiTouchView extends LinearLayout {
             btn_u.addOnLayoutChangeListener(new OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) return;
                     rect_u = new YunRect(left, top, right, bottom);
                     rect_u.setYun(InputManager.Y_U);
                 }
@@ -506,6 +550,7 @@ public class MultiTouchView extends LinearLayout {
             btn_i.addOnLayoutChangeListener(new OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) return;
                     rect_i = new YunRect(left, top, right, bottom);
                     rect_i.setYun(InputManager.Y_I);
                 }
@@ -514,7 +559,8 @@ public class MultiTouchView extends LinearLayout {
             btn_e.addOnLayoutChangeListener(new OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    rect_e = new YunRect(left, top, right, bottom);
+                    if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) return;
+                    rect_e = new YunRect(left, top+141, right, bottom+141);
                     rect_e.setYun(InputManager.Y_E);
                 }
             });
@@ -522,7 +568,10 @@ public class MultiTouchView extends LinearLayout {
             btn_a.addOnLayoutChangeListener(new OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    rect_a = new YunRect(left, top, right, bottom);
+                    if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) return;
+                    int[] p = new int[2];
+                    v.getLocationOnScreen(p);
+                    rect_a = new YunRect(left, top+141, right, bottom+141);
                     rect_a.setYun(InputManager.Y_A);
                 }
             });
@@ -530,7 +579,8 @@ public class MultiTouchView extends LinearLayout {
             btn_o.addOnLayoutChangeListener(new OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                    rect_o = new YunRect(left, top, right, bottom);
+                    if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) return;
+                    rect_o = new YunRect(left, top+141, right, bottom+141);
                     rect_o.setYun(InputManager.Y_O);
                 }
             });
@@ -538,20 +588,40 @@ public class MultiTouchView extends LinearLayout {
             btn_n.addOnLayoutChangeListener(new OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) return;
                     rect_n = new YunRect(left, top, right, bottom);
-                    rect_u.setYun(null);
+                    int[] p = new int[2];
+                    v.getLocationOnScreen(p);
+                    rect_n.setYun(InputManager.Y_N);
                 }
             });
 
             btn_g.addOnLayoutChangeListener(new OnLayoutChangeListener() {
                 @Override
                 public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                    if (left == oldLeft && top == oldTop && right == oldRight && bottom == oldBottom) return;
                     rect_g = new YunRect(left, top, right, bottom);
-                    rect_g.setYun(null);
+                    rect_g.setYun(InputManager.Y_G);
                 }
             });
         }
 
+        /**
+         * calc the distance from point r to the line from point s to point e
+         * @param s starting point
+         * @param e ending point
+         * @param r target point
+         * @return distance from r to line s-e
+         */
+        private double disFromLine(PointF s, PointF e, PointF r) {
+            double vx = e.x - s.x,
+                   vy = e.y - s.y,
+                   rx = r.x - s.x,
+                   ry = r.y - s.y;
+
+            return Math.abs(vx * ry - rx * vy) / Math.sqrt(vx * vx + vy * vy);
+
+        }
         /**
          * write all trajectories into an two-dimensional array
          */

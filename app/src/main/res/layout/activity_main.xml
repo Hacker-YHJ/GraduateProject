@@ -3,10 +3,36 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Space
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1"
+        android:background="@drawable/bottom_border">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/screen"
+            android:textSize="48dp"
+            android:padding="20dp"
+            android:background="@drawable/bottom_border"
+            android:textColor="#FFF" />
+
+        <TextView
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/pinyinIndicator"
+            android:textSize="16dp"
+            android:padding="10dp"
+            android:background="@drawable/top_left_border"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="10dp"
+            android:textColor="#FFF" />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:orientation="horizontal"
@@ -247,11 +273,18 @@
 
         </TableLayout>
 
-        <com.yanghj.newinputtest.CharacterSelectView
+        <GridView xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="0dp"
             android:layout_height="fill_parent"
             android:layout_weight="2"
-            android:background="#20262A"></com.yanghj.newinputtest.CharacterSelectView>
+            android:background="#20262A"
+            android:id="@+id/charSelectView"
+            android:numColumns="6"
+            android:gravity="center"
+            android:stretchMode="columnWidth"
+            android:horizontalSpacing="20px"
+            android:padding="40px"
+            android:verticalSpacing="10px" />
 
         <com.yanghj.newinputtest.MultiTouchView
             android:orientation="vertical"
@@ -265,8 +298,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
                 android:layout_gravity="center">
 
                 <TextView
@@ -300,9 +331,7 @@
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp">
+                android:layout_weight="1">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -349,8 +378,6 @@
                 android:id="@+id/char_n"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
                 android:layout_gravity="center"
                 android:textSize="28dp"
                 android:textColor="#ffffff"
@@ -364,8 +391,6 @@
                 android:id="@+id/char_g"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
                 android:layout_gravity="center"
                 android:textSize="28dp"
                 android:textColor="#ffffff"
